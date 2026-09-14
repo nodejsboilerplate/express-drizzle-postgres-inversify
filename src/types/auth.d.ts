@@ -1,0 +1,28 @@
+import type { UserProfileSelectType, UserSelectType } from "@/database/type";
+
+export type AccessTokenPayload = Pick<
+  UserSelectType,
+  "email" | "id" | "is_verified" | "role" | "username"
+>;
+
+export type UserProfileDataByLoginType = Pick<
+  UserProfileSelectType,
+  "first_name" | "last_name" | "nickname" | "avatar"
+>;
+export type UserBasicInfoDataType = AccessTokenPayload &
+  UserProfileDataByLoginType;
+
+export type RefreshTokenPayload = Pick<UserSelectType, "id" | "role">;
+
+export type CookieNames = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+declare global {
+  namespace Express {
+    interface Request {
+      auth_user: AccessTokenPayload;
+    }
+  }
+}

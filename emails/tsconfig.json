@@ -1,0 +1,10 @@
+// emails/tsconfig.json
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2024", "dom", "DOM.Iterable"],
+    "outDir": "dist"
+  },
+  "include": ["src"]
+}
