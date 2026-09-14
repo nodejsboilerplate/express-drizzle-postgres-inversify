@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { injectable } from "inversify";
 import twilio, { type Twilio } from "twilio";
 import type { IdentityMatchParameters } from "twilio/lib/rest/lookups/v2/query";
 
@@ -11,6 +12,7 @@ export enum TwilioMessageTemplates {
   SMS_EVENT_NOTIFICATIONS = "sms_event_notifications",
 }
 
+@injectable()
 export abstract class TwilioService {
   private static ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
   private static AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;

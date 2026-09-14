@@ -25,6 +25,7 @@ import type {
   UpdateProfileInputType,
 } from "@/zod";
 import { validate as isUUID } from "uuid";
+import { injectable } from "inversify";
 
 // ---------------------------------------------------------
 // Prepared Statements
@@ -118,6 +119,7 @@ const prepareGetUserVerifyDetails = pgDb.query.usersTable
   })
   .prepare("GetUserVerifyDetails");
 
+@injectable()
 export class UserRepository {
   // ---------------------------------------------------------
   // Create

@@ -1,19 +1,17 @@
 import { ApiResponse } from "@/libs";
 import { ResendService } from "@/services";
 import type { Request, Response } from "express";
+import { inject, injectable } from "inversify";
 
 const sanitize = (value: unknown): string =>
   String(value ?? "").replace(/[\r\n]/g, "");
 
-type ResendControllerDepsType = {
-  resendService: ResendService;
-};
-
+@injectable()
 export class ResendController {
-  private resendService: ResendService;
-  constructor({ resendService }: ResendControllerDepsType) {
-    this.resendService = resendService;
-  }
+  constructor(
+    @inject(ResendService)
+    private resendService: ResendService
+  ) {}
 
   async webhook(req: Request, res: Response) {
     const headers = this.resendService.getWebhookHeaders(req);

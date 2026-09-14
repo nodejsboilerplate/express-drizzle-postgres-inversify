@@ -1,71 +1,93 @@
-import type { ContainerType } from "@/types";
+import type { IRouter } from "@/blueprints";
+import { MessageController } from "@/controllers";
+import { AuthMiddleware } from "@/middlewares";
 import { asyncHandler } from "@/utils";
 import { Router } from "express";
+import { inject, injectable } from "inversify";
 
-export const messageRouter = (container: ContainerType) => {
-  const router: Router = Router();
+@injectable()
+export class MessageRouter implements IRouter {
+  private router: Router;
 
-  const { controllerContainer, middlewareContainer } = container;
-  const { messegeController } = controllerContainer;
-  const { authMiddleware } = middlewareContainer;
+  constructor(
+    @inject(MessageController)
+    private messageController: MessageController,
 
-  router
-    .route("/signup/code")
-    .post(
-      authMiddleware,
-      asyncHandler(
-        messegeController.resendSignupCodeHandler.bind(messegeController)
-      )
-    );
+    @inject(AuthMiddleware)
+    private authMiddleware: AuthMiddleware
+  ) {
+    this.router = Router();
+  }
 
-  router
-    .route("/verify/signup/code")
-    .post(
-      authMiddleware,
-      asyncHandler(
-        messegeController.verifySignupCodeHandler.bind(messegeController)
-      )
-    );
-
-  router
-    .route("/contacts/phones/:id/code")
-    .post(
-      authMiddleware,
-      asyncHandler(
-        messegeController.sendContactPhoneVerificationHandler.bind(
-          messegeController
+  createRouters(): void {
+    this.router
+      .route("/signup/code")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.messageController.resendSignupCodeHandler.bind(
+            this.messageController
+          )
         )
-      )
-    );
+      );
 
-  router
-    .route("/contacts/emails/:id/code")
-    .post(
-      authMiddleware,
-      asyncHandler(
-        messegeController.sendContactEmailVerificationHandler.bind(
-          messegeController
+    this.router
+      .route("/verify/signup/code")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.messageController.verifySignupCodeHandler.bind(
+            this.messageController
+          )
         )
-      )
-    );
+      );
 
-  router
-    .route("/verify/contacts/phones/:id")
-    .post(
-      authMiddleware,
-      asyncHandler(
-        messegeController.verifyContactPhoneHandler.bind(messegeController)
-      )
-    );
+    this.router
+      .route("/contacts/phones/:id/code")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.messageController.sendContactPhoneVerificationHandler.bind(
+            this.messageController
+          )
+        )
+      );
 
-  router
-    .route("/verify/contacts/emails/:id")
-    .post(
-      authMiddleware,
-      asyncHandler(
-        messegeController.verifyContactEmailHandler.bind(messegeController)
-      )
-    );
+    this.router
+      .route("/contacts/emails/:id/code")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.messageController.sendContactEmailVerificationHandler.bind(
+            this.messageController
+          )
+        )
+      );
 
-  return router;
-};
+    this.router
+      .route("/verify/contacts/phones/:id")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.messageController.verifyContactPhoneHandler.bind(
+            this.messageController
+          )
+        )
+      );
+
+    this.router
+      .route("/verify/contacts/emails/:id")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.messageController.verifyContactEmailHandler.bind(
+            this.messageController
+          )
+        )
+      );
+  }
+
+  getRouters(): Router {
+    return this.router;
+  }
+}

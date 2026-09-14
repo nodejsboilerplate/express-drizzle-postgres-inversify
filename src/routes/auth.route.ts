@@ -1,43 +1,71 @@
 import { Router } from "express";
 import { asyncHandler } from "@/utils";
-import type { ContainerType } from "@/types";
+import { inject, injectable } from "inversify";
+import { AuthController } from "@/controllers";
+import { AuthMiddleware } from "@/middlewares";
+import type { IRouter } from "@/blueprints";
 
-export const authRouter = (container: ContainerType) => {
-  const router: Router = Router();
+@injectable()
+export class AuthRouter implements IRouter {
+  private router: Router;
 
-  const { controllerContainer, middlewareContainer } = container;
-  const { authController } = controllerContainer;
-  const { authMiddleware } = middlewareContainer;
+  constructor(
+    @inject(AuthController)
+    private authController: AuthController,
 
-  router
-    .route("/signup")
-    .post(asyncHandler(authController.signupUserHandler.bind(authController)));
+    @inject(AuthMiddleware)
+    private authMiddleware: AuthMiddleware
+  ) {
+    this.router = Router();
+  }
 
-  router
-    .route("/login")
-    .post(asyncHandler(authController.loginUserHandler.bind(authController)));
+  createRouters(): void {
+    this.router
+      .route("/signup")
+      .post(
+        asyncHandler(
+          this.authController.signupUserHandler.bind(this.authController)
+        )
+      );
 
-  router
-    .route("/signin/google")
-    .get(
-      asyncHandler(
-        authController.redirectGoogleAuthHandler.bind(authController)
-      )
-    );
-  router
-    .route("/callback/google")
-    .get(
-      asyncHandler(authController.loginWithGoogleHandler.bind(authController))
-    );
+    this.router
+      .route("/login")
+      .post(
+        asyncHandler(
+          this.authController.loginUserHandler.bind(this.authController)
+        )
+      );
 
-  router
-    .route("/me")
-    .get(
-      authMiddleware,
-      asyncHandler(
-        authController.authUserBasicDataProvider.bind(authController)
-      )
-    );
+    this.router
+      .route("/signin/google")
+      .get(
+        asyncHandler(
+          this.authController.redirectGoogleAuthHandler.bind(
+            this.authController
+          )
+        )
+      );
+    this.router
+      .route("/callback/google")
+      .get(
+        asyncHandler(
+          this.authController.loginWithGoogleHandler.bind(this.authController)
+        )
+      );
 
-  return router;
-};
+    this.router
+      .route("/me")
+      .get(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.authController.authUserBasicDataProvider.bind(
+            this.authController
+          )
+        )
+      );
+  }
+
+  getRouters(): Router {
+    return this.router;
+  }
+}

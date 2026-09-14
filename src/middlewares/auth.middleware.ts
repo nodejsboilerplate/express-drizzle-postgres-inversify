@@ -1,10 +1,12 @@
-import type { createContainer } from "@/container";
-import type { createMiddlewares } from "@/containers";
+import { UserRepository } from "@/database/repositories";
 import { getSystemCustomErrorMsgByKey } from "@/events";
 import { ApiError } from "@/libs";
+import { AuthRedis } from "@/redis";
+import { TokenService } from "@/services/auth";
 import { CookieService } from "@/services/cookie.service";
 import type { AccessTokenPayload, UserBasicInfoDataType } from "@/types";
 import type { NextFunction, Response, Request } from "express";
+import { inject, injectable } from "inversify";
 
 /**
  * Middleware to enforce authentication and manage token rotation.
@@ -18,22 +20,20 @@ import type { NextFunction, Response, Request } from "express";
  *
  * @throws {ApiError} 401 Unauthorized if both tokens are invalid or user lacks Admin permissions.
  */
-export const createAuthMiddleware = (
-  container: Parameters<typeof createMiddlewares>[0]
-) => {
-  const { redisServices, repositories, services } = container;
+@injectable()
+export class AuthMiddleware {
+  constructor(
+    @inject(TokenService)
+    private tokenService: TokenService,
+    @inject(AuthRedis)
+    private authRedis: AuthRedis,
+    @inject(UserRepository)
+    private userRepository: UserRepository
+  ) {}
 
-  const { tokenService } = services;
-  const { authRedis } = redisServices;
-  const { userRepository } = repositories;
-
-  const authMiddlware = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  async basicAuth(req: Request, res: Response, next: NextFunction) {
     try {
-      const { accessToken, refreshToken } = tokenService.getCookies(req);
+      const { accessToken, refreshToken } = this.tokenService.getCookies(req);
 
       /**
        * Fast-Path (Access Token)
@@ -41,8 +41,9 @@ export const createAuthMiddleware = (
        */
       if (accessToken && refreshToken) {
         try {
-          const decode_data = tokenService.getDataFromAccessToken(accessToken);
-          tokenService.getDataFromRefreshToken(refreshToken);
+          const decode_data =
+            this.tokenService.getDataFromAccessToken(accessToken);
+          this.tokenService.getDataFromRefreshToken(refreshToken);
 
           if (decode_data?.id) {
             req.auth_user = decode_data;
@@ -63,7 +64,7 @@ export const createAuthMiddleware = (
 
       let decoded;
       try {
-        decoded = tokenService.getDataFromRefreshToken(refreshToken);
+        decoded = this.tokenService.getDataFromRefreshToken(refreshToken);
       } catch (err) {
         throw new ApiError(401, getSystemCustomErrorMsgByKey("UNAUTHORIZED")!);
       }
@@ -71,14 +72,16 @@ export const createAuthMiddleware = (
       let temp_user: AccessTokenPayload;
 
       // Redis Lookup
-      const get_cached_data = await authRedis.getCachedLoginData(decoded.id);
+      const get_cached_data = await this.authRedis.getCachedLoginData(
+        decoded.id
+      );
       const parse_data = JSON.parse(
         String(get_cached_data)
       ) as UserBasicInfoDataType;
 
       if (!parse_data) {
         const user =
-          await userRepository.GetUserDataForLoginByEmailOrUsernameOrId(
+          await this.userRepository.GetUserDataForLoginByEmailOrUsernameOrId(
             decoded.id
           );
 
@@ -89,9 +92,9 @@ export const createAuthMiddleware = (
         const profile = user?.profile;
 
         const { tokenData, profileData } =
-          tokenService.finalLoginResponseUserData(user, profile!);
+          this.tokenService.finalLoginResponseUserData(user, profile!);
 
-        await authRedis.cacheUserLoginData(user?.id as string, {
+        await this.authRedis.cacheUserLoginData(user?.id as string, {
           ...tokenData,
           ...profileData,
         });
@@ -115,7 +118,8 @@ export const createAuthMiddleware = (
        * Token Rotation
        * Generate a new short-lived Access Token and update the client's cookie.
        */
-      const renewed_access_token = tokenService.renewAccessToken(temp_user);
+      const renewed_access_token =
+        this.tokenService.renewAccessToken(temp_user);
 
       res.cookie(
         CookieService.ACCESS_TOKEN.name,
@@ -135,7 +139,5 @@ export const createAuthMiddleware = (
     } catch (error) {
       throw new ApiError(401, getSystemCustomErrorMsgByKey("UNAUTHORIZED")!);
     }
-  };
-
-  return authMiddlware;
-};
+  }
+}

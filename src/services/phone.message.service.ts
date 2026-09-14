@@ -11,25 +11,20 @@ import {
   isZodError,
   validationError,
 } from "@/utils";
+import { inject, injectable } from "inversify";
 
-type PhoneMessagingServiceDepsType = {
-  userInputValidators: UserInputValidators;
-  userRepository: UserRepository;
-};
-
+@injectable()
 export class PhoneMessagingService
   extends TwilioService
   implements IPhoneMessageService
 {
-  private userInputValidators: UserInputValidators;
-  private userRepository: UserRepository;
-  constructor({
-    userInputValidators,
-    userRepository,
-  }: PhoneMessagingServiceDepsType) {
+  constructor(
+    @inject(UserInputValidators)
+    private userInputValidators: UserInputValidators,
+    @inject(UserRepository)
+    private userRepository: UserRepository
+  ) {
     super();
-    this.userInputValidators = userInputValidators;
-    this.userRepository = userRepository;
   }
 
   async sendContactPhoneVerificationCode(

@@ -34,6 +34,9 @@ importers:
       googleapis:
         specifier: ^178.0.0
         version: 178.0.0
+      inversify:
+        specifier: ^8.2.3
+        version: 8.2.3(reflect-metadata@0.2.2)
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
@@ -58,6 +61,9 @@ importers:
       redis:
         specifier: ^6.2.1
         version: 6.2.1(@opentelemetry/api@1.9.1)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
       request-ip:
         specifier: ^3.3.0
         version: 3.3.0
@@ -1773,6 +1779,46 @@ packages:
     peerDependenciesMeta:
       "@types/node":
         optional: true
+
+  "@inversifyjs/common@2.0.1":
+    resolution:
+      {
+        integrity: sha512-pJAR4IAcT2jkYfZ9bD9XhtUDBLJRr8QOiSjb+2XyaHru6DLvu0VD2Id2iP7+tVRKkEe3XFUwDUEdKxcYlF699Q==,
+      }
+
+  "@inversifyjs/container@3.1.3":
+    resolution:
+      {
+        integrity: sha512-+CZLXKzU5uwDbkY1WamY1Gnbtz0sNl62cqfd1vvI13Ei8Fe29sCwgfyEWMOzYcJhs2y2wBmYGANPDH5yq4VdTg==,
+      }
+    peerDependencies:
+      reflect-metadata: ~0.2.2
+
+  "@inversifyjs/core@15.0.1":
+    resolution:
+      {
+        integrity: sha512-4C/hLEdYo3xG0Ez61kTP3nikINmCQz1O3OHU7dfbi9UC6Of5Qly2CLd0OSoZd6M8fumk51A0tuBxPIqs28CpNg==,
+      }
+
+  "@inversifyjs/plugin@0.3.1":
+    resolution:
+      {
+        integrity: sha512-ByklTw731fydBCTMwMpkmwm+lv0U+JWm9NEqRsz3n5KzAC5Om2XtLjqzEC2w+8Ote3gVC3Qxsx6YmG9XLIZpvg==,
+      }
+
+  "@inversifyjs/prototype-utils@0.2.1":
+    resolution:
+      {
+        integrity: sha512-53cVE3cw+RxnSkGlg+jOFNSox2owJF9Fv3HgFKe4f+4aPullscltIiio88QRkx2Sc5yo3VlqPsXQFGw2CVJZnw==,
+      }
+
+  "@inversifyjs/reflect-metadata-utils@1.5.0":
+    resolution:
+      {
+        integrity: sha512-NpJVbRbuQ6Ao2vO+aw96un3oHDFCwXI0+pplsFt0Jh0gyR8DWk4m7ml/GBNMjdbeKVW/QgJ2S6NGXjk042uwqg==,
+      }
+    peerDependencies:
+      reflect-metadata: ~0.2.2
 
   "@isaacs/cliui@8.0.2":
     resolution:
@@ -5688,6 +5734,12 @@ packages:
       }
     engines: { node: ">= 0.4" }
 
+  inversify@8.2.3:
+    resolution:
+      {
+        integrity: sha512-OmTj/HB/lEV6WFaeHXBDXdUYWwtadF8QTbyEKT7LUZMzOkw5xF+Nrm1GTjIhBOrAUN4K65vtqKgxRWlSHzQH7w==,
+      }
+
   ip-address@10.5.0:
     resolution:
       {
@@ -7256,6 +7308,12 @@ packages:
         integrity: sha512-Z9VHtgYs48PiQC77X9O2Er8Hj4T+5BtFjT91/vi5Is1D04N72cA946ZslM1ImJw8ZctFBZWAVjM7S5wJNeHMpg==,
       }
     engines: { node: ">= 20.0.0" }
+
+  reflect-metadata@0.2.2:
+    resolution:
+      {
+        integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==,
+      }
 
   reflect.getprototypeof@1.0.10:
     resolution:
@@ -9360,6 +9418,34 @@ snapshots:
   "@inquirer/type@4.0.7(@types/node@26.2.0)":
     optionalDependencies:
       "@types/node": 26.2.0
+
+  "@inversifyjs/common@2.0.1": {}
+
+  "@inversifyjs/container@3.1.3(reflect-metadata@0.2.2)":
+    dependencies:
+      "@inversifyjs/common": 2.0.1
+      "@inversifyjs/core": 15.0.1(reflect-metadata@0.2.2)
+      "@inversifyjs/plugin": 0.3.1
+      "@inversifyjs/reflect-metadata-utils": 1.5.0(reflect-metadata@0.2.2)
+      reflect-metadata: 0.2.2
+
+  "@inversifyjs/core@15.0.1(reflect-metadata@0.2.2)":
+    dependencies:
+      "@inversifyjs/common": 2.0.1
+      "@inversifyjs/prototype-utils": 0.2.1
+      "@inversifyjs/reflect-metadata-utils": 1.5.0(reflect-metadata@0.2.2)
+    transitivePeerDependencies:
+      - reflect-metadata
+
+  "@inversifyjs/plugin@0.3.1": {}
+
+  "@inversifyjs/prototype-utils@0.2.1":
+    dependencies:
+      "@inversifyjs/common": 2.0.1
+
+  "@inversifyjs/reflect-metadata-utils@1.5.0(reflect-metadata@0.2.2)":
+    dependencies:
+      reflect-metadata: 0.2.2
 
   "@isaacs/cliui@8.0.2":
     dependencies:
@@ -11729,6 +11815,14 @@ snapshots:
       hasown: 2.0.4
       side-channel: 1.1.1
 
+  inversify@8.2.3(reflect-metadata@0.2.2):
+    dependencies:
+      "@inversifyjs/common": 2.0.1
+      "@inversifyjs/container": 3.1.3(reflect-metadata@0.2.2)
+      "@inversifyjs/core": 15.0.1(reflect-metadata@0.2.2)
+    transitivePeerDependencies:
+      - reflect-metadata
+
   ip-address@10.5.0: {}
 
   ipaddr.js@1.9.1: {}
@@ -12604,6 +12698,8 @@ snapshots:
     transitivePeerDependencies:
       - "@node-rs/xxhash"
       - "@opentelemetry/api"
+
+  reflect-metadata@0.2.2: {}
 
   reflect.getprototypeof@1.0.10:
     dependencies:

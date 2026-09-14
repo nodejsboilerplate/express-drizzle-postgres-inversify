@@ -10,8 +10,8 @@ import { ExpressServer } from "./server";
 import { pgDb } from "./libs/db.connect";
 import { sql } from "drizzle-orm";
 import promClient from "@prometheus-io/client";
-import { apiRouters } from "./routes";
-import { createContainer } from "./container";
+import { container } from "./container";
+import { ApiRouter } from "./routes";
 
 /* -------------------------------------------------------------------------- */
 /*                                 Metrics                                    */
@@ -51,8 +51,9 @@ app.use(limiter);
 /*                                   Routes                                   */
 /* -------------------------------------------------------------------------- */
 
-const container = createContainer();
-app.use("/api", apiRouters(container));
+const apiRouter = container.get(ApiRouter);
+apiRouter.createRouters();
+app.use("/api", apiRouter.getRouters());
 app.get("/health", async (_, res) => {
   return res.status(200).json(new ApiResponse(200, "OK"));
 });

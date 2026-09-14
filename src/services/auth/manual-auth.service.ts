@@ -8,40 +8,26 @@ import { AuthRedis } from "@/redis";
 import { UserRepository } from "@/database/repositories";
 import { UserService } from "../user.service";
 import type { IEmailService } from "@/blueprints";
-import type { TokenService } from "./token.service";
+import { TokenService } from "./token.service";
+import { inject, injectable } from "inversify";
+import { DITokens } from "@/ditokens";
 
-type ManualAuthServiceDepsType = {
-  userRepository: UserRepository;
-  userService: UserService;
-  authRedis: AuthRedis;
-  userInputValidators: UserInputValidators;
-  emailService: IEmailService;
-  tokenService: TokenService;
-};
-
+@injectable()
 export class ManualAuthService {
-  private userRepository;
-  private userService;
-  private authRedis;
-  private userInputValidators;
-  private emailService;
-  private tokenService;
-
-  constructor({
-    userRepository,
-    userService,
-    authRedis,
-    userInputValidators,
-    emailService,
-    tokenService,
-  }: ManualAuthServiceDepsType) {
-    this.userRepository = userRepository;
-    this.userService = userService;
-    this.authRedis = authRedis;
-    this.userInputValidators = userInputValidators;
-    this.emailService = emailService;
-    this.tokenService = tokenService;
-  }
+  constructor(
+    @inject(UserRepository)
+    private userRepository: UserRepository,
+    @inject(UserService)
+    private userService: UserService,
+    @inject(AuthRedis)
+    private authRedis: AuthRedis,
+    @inject(UserInputValidators)
+    private userInputValidators: UserInputValidators,
+    @inject(DITokens.EmailService)
+    private emailService: IEmailService,
+    @inject(TokenService)
+    private tokenService: TokenService
+  ) {}
 
   async loginByManual(
     payload: LoginUserInputType,

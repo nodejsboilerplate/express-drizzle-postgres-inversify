@@ -20,7 +20,9 @@ import {
 } from "@/zod";
 import type z from "zod";
 import { Validator } from "../validator";
+import { injectable } from "inversify";
 
+@injectable()
 export class UserInputValidators extends Validator {
   emailInput(payload: EmailZType): EmailZType | z.ZodError {
     const { data, success, error } = this.validate(payload, UserZSchema.email);

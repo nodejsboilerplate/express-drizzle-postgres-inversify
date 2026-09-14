@@ -14,17 +14,14 @@ import type {
 
 import { ApiResponse } from "@/libs";
 import { UserService } from "@/services";
+import { inject, injectable } from "inversify";
 
-type UserControllerDepsType = {
-  userService: UserService;
-};
-
+@injectable()
 export class UserController {
-  private userService: UserService;
-
-  constructor({ userService }: UserControllerDepsType) {
-    this.userService = userService;
-  }
+  constructor(
+    @inject(UserService)
+    private userService: UserService
+  ) {}
   // ---------------------------------------------------------
   // Create
   // ---------------------------------------------------------

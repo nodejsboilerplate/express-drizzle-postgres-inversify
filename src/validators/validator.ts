@@ -1,6 +1,8 @@
 import { ZodBase, type IdZType } from "@/zod";
+import { injectable } from "inversify";
 import type z from "zod";
 
+@injectable()
 export class Validator {
   protected validate<T>(
     payload: unknown,

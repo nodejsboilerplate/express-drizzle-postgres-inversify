@@ -1,20 +1,17 @@
 import { ApiError, ApiResponse } from "@/libs";
 import { CookieService } from "@/services";
-import type { AuthService } from "@/services/auth";
+import { AuthService } from "@/services/auth";
 import type { UserProfileDataByLoginType } from "@/types";
 import type { CreateUserWithProfileInputType, LoginUserInputType } from "@/zod";
 import type { Request, Response } from "express";
+import { inject, injectable } from "inversify";
 
-type AuthControllerDepsType = {
-  authService: AuthService;
-};
-
+@injectable()
 export class AuthController {
-  private authService: AuthService;
-
-  constructor({ authService }: AuthControllerDepsType) {
-    this.authService = authService;
-  }
+  constructor(
+    @inject(AuthService)
+    private authService: AuthService
+  ) {}
 
   async signupUserHandler(req: Request, res: Response): Promise<Response> {
     const payload = req.body as CreateUserWithProfileInputType;

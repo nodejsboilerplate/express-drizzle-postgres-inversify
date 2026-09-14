@@ -35,5 +35,5 @@ module "grafana_nebula_dashboard" {
   prometheus_datasource_uid = module.prometheus.datasource_uid
   loki_datasource_uid       = module.loki.datasource_uid
 
-
+  depends_on = [module.prometheus, module.loki]
 }

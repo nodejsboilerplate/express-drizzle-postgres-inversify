@@ -5,9 +5,11 @@ import type { Request } from "express";
 import { ApiError } from "@/libs";
 import { getSystemCustomErrorMsgByKey } from "@/events";
 import type { WebhookHeadersType } from "@/types";
+import { injectable } from "inversify";
 
+@injectable()
 export class ResendService {
-  static resend: Resend | null = null;
+  resend: Resend | null = null;
   static TEAM_NAME: string = "My Team";
   static APP_LOGO_URL: string = "";
   static EMAIL_DOMAIN: string = process.env.EMAIL_DOMAIN ?? "fluctux.com";
@@ -15,9 +17,7 @@ export class ResendService {
   static EMAIL_ADDRESS_FOR_VERIFICATION: string = "verify";
 
   constructor() {
-    if (!ResendService.resend) {
-      ResendService.resend = new Resend(resendConfig.RESEND_API_KEY);
-    }
+    this.resend = new Resend(resendConfig.RESEND_API_KEY);
   }
 
   static GetFullEmail(title: string, address: string) {
@@ -57,7 +57,7 @@ export class ResendService {
       );
     }
 
-    const result = ResendService.resend?.webhooks.verify({
+    const result = this.resend?.webhooks.verify({
       headers: {
         id: svixId,
         signature: svixSignature,

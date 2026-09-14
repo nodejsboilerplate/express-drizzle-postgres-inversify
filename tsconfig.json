@@ -16,6 +16,8 @@
     "moduleDetection": "force",
     "noUnusedParameters": true,
     "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "noEmit": true,
     "noUnusedLocals": true,
     "strict": true,

@@ -4,28 +4,19 @@ import { ApiError } from "@/libs";
 import { isZodError, validationError } from "@/utils";
 import { UserInputValidators } from "@/validators/inputs";
 import type { VerifyCodeInputType, VerifyCodeWithUserIdInput } from "@/zod";
-import type { UserService } from "./user.service";
+import { UserService } from "./user.service";
+import { inject, injectable } from "inversify";
 
-type VerificationServiceDepsType = {
-  userInputValidators: UserInputValidators;
-  userRepository: UserRepository;
-  userService: UserService;
-};
-
+@injectable()
 export class VerificationService {
-  private userInputValidators: UserInputValidators;
-  private userRepository: UserRepository;
-  private userService: UserService;
-
-  constructor({
-    userInputValidators,
-    userRepository,
-    userService,
-  }: VerificationServiceDepsType) {
-    this.userInputValidators = userInputValidators;
-    this.userRepository = userRepository;
-    this.userService = userService;
-  }
+  constructor(
+    @inject(UserInputValidators)
+    private userInputValidators: UserInputValidators,
+    @inject(UserRepository)
+    private userRepository: UserRepository,
+    @inject(UserService)
+    private userService: UserService
+  ) {}
 
   async verifySignupCode(payload: VerifyCodeInputType): Promise<string> {
     const parse_payload = this.userInputValidators.verifyCodeInput(payload);

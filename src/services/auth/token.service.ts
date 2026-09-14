@@ -14,7 +14,9 @@ import { ApiError } from "@/libs";
 import jwt from "jsonwebtoken";
 import { authConfig } from "@/config";
 import type { Request } from "express";
+import { injectable } from "inversify";
 
+@injectable()
 export class TokenService {
   createTokens(payload: AccessTokenPayload): CookieNames {
     const accessToken = jwt.sign(payload, authConfig.JWT_ACCESS_TOKEN_SECRET, {

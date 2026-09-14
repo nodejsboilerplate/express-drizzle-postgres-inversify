@@ -4,29 +4,19 @@ import type { TokenPayload } from "google-auth-library";
 import { ApiError } from "@/libs";
 import { getSystemCustomErrorMsgByKey } from "@/events";
 import type { CreateUserWithProfileByProviderInputType } from "@/zod";
-
 import { AuthRedis } from "@/redis";
 import { generateRandomUsername } from "@/utils";
 import type { IEmailService, OAuthService } from "@/blueprints";
-import type { TokenService } from "./token.service";
-import type { UserService } from "../user.service";
+import { TokenService } from "./token.service";
+import { UserService } from "../user.service";
+import { inject, injectable } from "inversify";
+import { DITokens } from "@/ditokens";
 
-type GoogleOAuthServiceDepsType = {
-  authRedis: AuthRedis;
-  emailService: IEmailService;
-  userService: UserService;
-  tokenService: TokenService;
-};
-
+@injectable()
 export class GoogleOAuthService implements OAuthService {
   private static CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   private static CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
   private static REDIRECT_URI = process.env.GOOGLE_AUTH_REDIRECT_URI;
-
-  private authRedis: AuthRedis;
-  private emailService: IEmailService;
-  private userService: UserService;
-  private tokenService: TokenService;
 
   private static LoginScopes = [
     "https://www.googleapis.com/auth/userinfo.profile",
@@ -35,17 +25,16 @@ export class GoogleOAuthService implements OAuthService {
 
   private oauthClient;
 
-  constructor({
-    authRedis,
-    emailService,
-    userService,
-    tokenService,
-  }: GoogleOAuthServiceDepsType) {
-    this.authRedis = authRedis;
-    this.emailService = emailService;
-    this.userService = userService;
-    this.tokenService = tokenService;
-
+  constructor(
+    @inject(AuthRedis)
+    private authRedis: AuthRedis,
+    @inject(DITokens.EmailService)
+    private emailService: IEmailService,
+    @inject(UserService)
+    private userService: UserService,
+    @inject(TokenService)
+    private tokenService: TokenService
+  ) {
     this.oauthClient = new google.auth.OAuth2({
       client_id: GoogleOAuthService.CLIENT_ID!,
       client_secret: GoogleOAuthService.CLIENT_SECRET!,

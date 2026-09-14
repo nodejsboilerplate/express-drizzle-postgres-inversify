@@ -1,58 +1,27 @@
 import { AuthRedis } from "@/redis";
 import { GoogleOAuthService } from "./google-auth.service";
 import { ManualAuthService } from "./manual-auth.service";
-import { UserService } from "../user.service";
 import { UserRepository } from "@/database/repositories";
-import { UserInputValidators } from "@/validators/inputs";
 import { TokenService } from "./token.service";
-import type { IEmailService } from "@/blueprints";
 import type { UserBasicInfoDataType } from "@/types";
 import { getSystemCustomErrorMsgByKey } from "@/events";
 import { ApiError } from "@/libs";
+import { inject, injectable } from "inversify";
 
-type AuthServiceDepsType = {
-  authRedis: AuthRedis;
-  emailService: IEmailService;
-  tokenService: TokenService;
-  userInputValidators: UserInputValidators;
-  userRepository: UserRepository;
-  userService: UserService;
-};
-
+@injectable()
 export class AuthService {
-  public manualAuth: ManualAuthService;
-  public googleOAuth: GoogleOAuthService;
-  private userRepository: UserRepository;
-  private authRedis: AuthRedis;
-  private tokenService: TokenService;
-
-  constructor({
-    authRedis,
-    emailService,
-    tokenService,
-    userInputValidators,
-    userRepository,
-    userService,
-  }: AuthServiceDepsType) {
-    this.userRepository = userRepository;
-    this.authRedis = authRedis;
-    this.tokenService = tokenService;
-
-    this.manualAuth = new ManualAuthService({
-      authRedis,
-      emailService,
-      tokenService,
-      userInputValidators,
-      userRepository,
-      userService,
-    });
-    this.googleOAuth = new GoogleOAuthService({
-      authRedis,
-      emailService,
-      tokenService,
-      userService,
-    });
-  }
+  constructor(
+    @inject(AuthRedis)
+    private authRedis: AuthRedis,
+    @inject(UserRepository)
+    private userRepository: UserRepository,
+    @inject(TokenService)
+    private tokenService: TokenService,
+    @inject(ManualAuthService)
+    public manualAuth: ManualAuthService,
+    @inject(GoogleOAuthService)
+    public googleOAuth: GoogleOAuthService
+  ) {}
 
   async getAuthUserData(id: string) {
     let temp_user: UserBasicInfoDataType;

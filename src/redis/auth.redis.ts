@@ -2,7 +2,9 @@ import { RedisResponse } from "@/constants";
 import { redisClient } from "@/libs";
 import { ACCESS_TOKEN_EXPIRY_SEC } from "@/services";
 import type { UserBasicInfoDataType } from "@/types";
+import { injectable } from "inversify";
 
+@injectable()
 export class AuthRedis {
   async cacheUserLoginData(
     key: string,

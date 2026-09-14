@@ -1,33 +1,26 @@
 import type { IEmailService, IPhoneMessageService } from "@/blueprints";
+import { DITokens } from "@/ditokens";
 import { getSystemCustomErrorMsgByKey } from "@/events";
 import { ApiError, ApiResponse } from "@/libs";
-import type { VerificationService } from "@/services";
+import { VerificationService } from "@/services";
 import type {
   UserIdWithContextIdInputType,
   VerifyCodeInputType,
   VerifyCodeWithUserIdInput,
 } from "@/zod";
 import type { Request, Response } from "express";
+import { inject, injectable } from "inversify";
 
-type MessageControllerDepsType = {
-  emailService: IEmailService;
-  phoneService: IPhoneMessageService;
-  verificationService: VerificationService;
-};
-
+@injectable()
 export class MessageController {
-  private emailService: IEmailService;
-  private phoneService: IPhoneMessageService;
-  private verificationService: VerificationService;
-  constructor({
-    emailService,
-    phoneService,
-    verificationService,
-  }: MessageControllerDepsType) {
-    this.emailService = emailService;
-    this.phoneService = phoneService;
-    this.verificationService = verificationService;
-  }
+  constructor(
+    @inject(DITokens.EmailService)
+    private emailService: IEmailService,
+    @inject(DITokens.PhoneService)
+    private phoneService: IPhoneMessageService,
+    @inject(VerificationService)
+    private verificationService: VerificationService
+  ) {}
 
   async resendSignupCodeHandler(
     req: Request,

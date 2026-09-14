@@ -18,20 +18,16 @@ import type {
   UpdateProfileInputType,
   UserIdWithContextIdInputType,
 } from "@/zod";
+import { inject, injectable } from "inversify";
 
-type UserServiceDepsType = {
-  userInputValidators: UserInputValidators;
-  userRepository: UserRepository;
-};
-
+@injectable()
 export class UserService {
-  private userInputValidators: UserInputValidators;
-  private userRepository: UserRepository;
-
-  constructor({ userInputValidators, userRepository }: UserServiceDepsType) {
-    this.userInputValidators = userInputValidators;
-    this.userRepository = userRepository;
-  }
+  constructor(
+    @inject(UserInputValidators)
+    private userInputValidators: UserInputValidators,
+    @inject(UserRepository)
+    private userRepository: UserRepository
+  ) {}
   // ---------------------------------------------------------
   // Create
   // ---------------------------------------------------------

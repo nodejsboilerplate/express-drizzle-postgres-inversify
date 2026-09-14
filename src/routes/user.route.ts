@@ -1,131 +1,173 @@
 import { Router } from "express";
 import { asyncHandler } from "@/utils";
-import type { ContainerType } from "@/types";
+import type { IRouter } from "@/blueprints";
+import { inject, injectable } from "inversify";
+import { UserController } from "@/controllers";
+import { AuthMiddleware } from "@/middlewares";
 
-export const userRouter = (container: ContainerType) => {
-  const router: Router = Router();
+@injectable()
+export class UserRouter implements IRouter {
+  private router: Router;
 
-  const { controllerContainer, middlewareContainer } = container;
-  const { userController } = controllerContainer;
-  const { authMiddleware } = middlewareContainer;
+  constructor(
+    @inject(UserController)
+    private userController: UserController,
+    @inject(AuthMiddleware)
+    private authMiddleware: AuthMiddleware
+  ) {
+    this.router = Router();
+  }
 
-  // ---------------------------------------------------------
-  // Create
-  // ---------------------------------------------------------
+  createRouters(): void {
+    // ---------------------------------------------------------
+    // Create
+    // ---------------------------------------------------------
+    this.router
+      .route("/addresses")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.createAddressHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/addresses")
-    .post(
-      authMiddleware,
-      asyncHandler(userController.createAddressHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.createContactHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts")
-    .post(
-      authMiddleware,
-      asyncHandler(userController.createContactHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts/:id/phones")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.createPhoneHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts/:id/phones")
-    .post(
-      authMiddleware,
-      asyncHandler(userController.createPhoneHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts/:id/emails")
+      .post(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.createEmailHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts/:id/emails")
-    .post(
-      authMiddleware,
-      asyncHandler(userController.createEmailHandler.bind(userController))
-    );
+    // ---------------------------------------------------------
+    // Read
+    // ---------------------------------------------------------
+    this.router
+      .route("/profile")
+      .get(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.getUserProfileHandler.bind(this.userController)
+        )
+      );
 
-  // ---------------------------------------------------------
-  // Read
-  // ---------------------------------------------------------
-  router
-    .route("/profile")
-    .get(
-      authMiddleware,
-      asyncHandler(userController.getUserProfileHandler.bind(userController))
-    );
+    // ---------------------------------------------------------
+    // Update
+    // ---------------------------------------------------------
+    this.router
+      .route("/profile")
+      .patch(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.updateProfileHandler.bind(this.userController)
+        )
+      );
 
-  // ---------------------------------------------------------
-  // Update
-  // ---------------------------------------------------------
-  router
-    .route("/profile")
-    .patch(
-      authMiddleware,
-      asyncHandler(userController.updateProfileHandler.bind(userController))
-    );
+    this.router
+      .route("/addresses/:id")
+      .patch(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.updateAddressHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/addresses/:id")
-    .patch(
-      authMiddleware,
-      asyncHandler(userController.updateAddressHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts")
+      .patch(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.updateContactHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts")
-    .patch(
-      authMiddleware,
-      asyncHandler(userController.updateContactHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts/phones/:id")
+      .patch(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.updatePhoneHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts/phones/:id")
-    .patch(
-      authMiddleware,
-      asyncHandler(userController.updatePhoneHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts/emails/:id")
+      .patch(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.updateEmailHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts/emails/:id")
-    .patch(
-      authMiddleware,
-      asyncHandler(userController.updateEmailHandler.bind(userController))
-    );
+    // ---------------------------------------------------------
+    // Delete
+    // ---------------------------------------------------------
+    this.router
+      .route("/")
+      .delete(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.deleteUserHandler.bind(this.userController)
+        )
+      );
 
-  // ---------------------------------------------------------
-  // Delete
-  // ---------------------------------------------------------
-  router
-    .route("/")
-    .delete(
-      authMiddleware,
-      asyncHandler(userController.deleteUserHandler.bind(userController))
-    );
+    this.router
+      .route("/addresses/:id")
+      .delete(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.deleteAddressHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/addresses/:id")
-    .delete(
-      authMiddleware,
-      asyncHandler(userController.deleteAddressHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts/:id")
+      .delete(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.deleteContactHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts/:id")
-    .delete(
-      authMiddleware,
-      asyncHandler(userController.deleteContactHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts/phones/:id")
+      .delete(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.deletePhoneHandler.bind(this.userController)
+        )
+      );
 
-  router
-    .route("/contacts/phones/:id")
-    .delete(
-      authMiddleware,
-      asyncHandler(userController.deletePhoneHandler.bind(userController))
-    );
+    this.router
+      .route("/contacts/emails/:id")
+      .delete(
+        this.authMiddleware.basicAuth.bind(this.authMiddleware),
+        asyncHandler(
+          this.userController.deleteEmailHandler.bind(this.userController)
+        )
+      );
+  }
 
-  router
-    .route("/contacts/emails/:id")
-    .delete(
-      authMiddleware,
-      asyncHandler(userController.deleteEmailHandler.bind(userController))
-    );
-
-  return router;
-};
+  getRouters(): Router {
+    return this.router;
+  }
+}

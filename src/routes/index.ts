@@ -1,17 +1,40 @@
-import type { createContainer } from "@/container";
-import { authRouter } from "./auth.route";
-import { userRouter } from "./user.route";
-import { resendRouter } from "./resend.route";
 import { Router } from "express";
-import { messageRouter } from "./messsage.route";
+import type { IRouter } from "@/blueprints";
+import { inject, injectable } from "inversify";
+import { UserRouter } from "./user.route";
+import { AuthRouter } from "./auth.route";
+import { MessageRouter } from "./messsage.route";
+import { ResendRouter } from "./resend.route";
 
-export const apiRouters = (container: ReturnType<typeof createContainer>) => {
-  const router: Router = Router();
+@injectable()
+export class ApiRouter implements IRouter {
+  private router: Router;
 
-  router.use("/v1/users", userRouter(container));
-  router.use("/v1/auth", authRouter(container));
-  router.use("/v1/resend", resendRouter(container));
-  router.use("/v1/messages", messageRouter(container));
+  constructor(
+    @inject(UserRouter)
+    private userRouter: UserRouter,
+    @inject(AuthRouter)
+    private authRouter: AuthRouter,
+    @inject(MessageRouter)
+    private messageRouter: MessageRouter,
+    @inject(ResendRouter)
+    private resendRouter: ResendRouter
+  ) {
+    this.router = Router();
+    this.userRouter.createRouters();
+    this.authRouter.createRouters();
+    this.resendRouter.createRouters();
+    this.messageRouter.createRouters();
+  }
 
-  return router;
-};
+  createRouters(): void {
+    this.router.use("/v1/users", this.userRouter.getRouters());
+    this.router.use("/v1/auth", this.authRouter.getRouters());
+    this.router.use("/v1/resend", this.resendRouter.getRouters());
+    this.router.use("/v1/messages", this.messageRouter.getRouters());
+  }
+
+  getRouters(): Router {
+    return this.router;
+  }
+}

@@ -12,20 +12,17 @@ import { getSystemCustomErrorMsgByKey } from "@/events";
 import { UserInputValidators } from "@/validators/inputs";
 import { UserRepository } from "@/database/repositories";
 import type { UserIdWithContextIdInputType } from "@/zod";
+import { inject, injectable } from "inversify";
 
-type EmailServiceDepsType = {
-  userInputValidators: UserInputValidators;
-  userRepository: UserRepository;
-};
-
+@injectable()
 export class EmailService extends ResendService implements IEmailService {
-  private userInputValidators: UserInputValidators;
-  private userRepository: UserRepository;
-
-  constructor({ userInputValidators, userRepository }: EmailServiceDepsType) {
+  constructor(
+    @inject(UserInputValidators)
+    private userInputValidators: UserInputValidators,
+    @inject(UserRepository)
+    private userRepository: UserRepository
+  ) {
     super();
-    this.userInputValidators = userInputValidators;
-    this.userRepository = userRepository;
   }
 
   async sendSignupCode(email: string, deviceInfo: string) {
@@ -62,7 +59,7 @@ export class EmailService extends ResendService implements IEmailService {
       throw new ApiError(404, getSystemCustomErrorMsgByKey("USER_NOT_FOUND"));
     }
 
-    await EmailService.resend?.emails.send({
+    await this.resend?.emails.send({
       from: EmailService.GetFullEmail(
         "Signup",
         EmailService.EMAIL_ADDRESS_FOR_AUTH
@@ -105,7 +102,7 @@ export class EmailService extends ResendService implements IEmailService {
       throw new ApiError(404, getSystemCustomErrorMsgByKey("EMAIL_NOT_FOUND"));
     }
 
-    await EmailService.resend?.emails.send({
+    await this.resend?.emails.send({
       from: EmailService.GetFullEmail(
         "Email Verification",
         EmailService.EMAIL_ADDRESS_FOR_VERIFICATION
