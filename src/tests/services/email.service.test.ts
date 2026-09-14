@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EmailService } from "@/services";
+import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
   send: vi.fn(),
@@ -78,7 +79,7 @@ describe("EmailService", () => {
     mocks.generateVerificationCode.mockReturnValue("123456");
     mocks.getVerifyExpiry.mockReturnValue(new Date(Date.now() + 5 * 60_000));
     deps = buildDeps();
-    emailService = new EmailService(deps as any);
+    emailService = container.get(EmailService);
   });
 
   // -------------------------------------------------------

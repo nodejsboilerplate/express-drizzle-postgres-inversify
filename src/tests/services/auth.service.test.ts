@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AuthService } from "@/services/auth";
+import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
   manualAuthCtor: vi.fn(),
@@ -62,7 +63,7 @@ describe("AuthService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     deps = buildDeps();
-    authService = new AuthService(deps as any);
+    authService = container.get(AuthService);
   });
 
   // -------------------------------------------------------

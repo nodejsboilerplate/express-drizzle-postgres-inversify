@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { PhoneMessagingService } from "@/services";
+import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
   lookupWithCallerNameAndLineTypeIntelligence: vi.fn(),
@@ -64,7 +65,7 @@ describe("PhoneMessagingService", () => {
     mocks.generateVerificationCode.mockReturnValue("123456");
     mocks.getVerifyExpiry.mockReturnValue(new Date(Date.now() + 5 * 60_000));
     deps = buildDeps();
-    phoneMessagingService = new PhoneMessagingService(deps as any);
+    phoneMessagingService = container.get(PhoneMessagingService);
   });
 
   describe("sendContactPhoneVerificationCode", () => {

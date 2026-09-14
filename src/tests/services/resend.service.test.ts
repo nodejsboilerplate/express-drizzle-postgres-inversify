@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ResendService } from "@/services";
+import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
   resendFactory: vi.fn(),
@@ -47,23 +48,36 @@ const buildReq = (headers: Record<string, string | undefined>) =>
 describe("ResendService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (ResendService as any).resend = null;
     mocks.resendConfig.RESEND_WEBHOOK_SECRET = "test-webhook-secret";
+    container.snapshot();
+    // fresh unbound instance per test — ResendService has no injected deps,
+    // rebind is only needed if something else in the container already bound it.
+    if (container.isBound(ResendService)) {
+      container.rebind(ResendService).toSelf();
+    } else {
+      container.bind(ResendService).toSelf();
+    }
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   describe("constructor / client singleton", () => {
-    it("initializes the static Resend client on first instantiation", () => {
-      new ResendService();
+    it("initializes the resend client on instantiation", () => {
+      const resendService = container.get(ResendService);
       expect(mocks.resendFactory).toHaveBeenCalledTimes(1);
       expect(mocks.resendFactory).toHaveBeenCalledWith("test-api-key");
-      expect(ResendService.resend).not.toBeNull();
+      expect(resendService.resend).not.toBeNull();
     });
 
-    it("does not re-create the client on subsequent instantiations", () => {
-      new ResendService();
-      new ResendService();
-      new ResendService();
-      expect(mocks.resendFactory).toHaveBeenCalledTimes(1);
+    it("creates a new client per instance (no singleton behavior)", () => {
+      container.get(ResendService);
+      container.get(ResendService);
+      container.get(ResendService);
+      // container binding is transient by default; each get() constructs
+      // a new instance and thus a new Resend client
+      expect(mocks.resendFactory).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -76,7 +90,7 @@ describe("ResendService", () => {
 
   describe("getWebhookHeaders", () => {
     it("returns the parsed svix headers when all are present", () => {
-      const service = new ResendService();
+      const service = container.get(ResendService);
       const req = buildReq({
         "svix-id": "id-1",
         "svix-timestamp": "1700000000",
@@ -95,7 +109,7 @@ describe("ResendService", () => {
     it.each([["svix-id"], ["svix-timestamp"], ["svix-signature"]])(
       "throws 400 when %s header is missing",
       (missingHeader) => {
-        const service = new ResendService();
+        const service = container.get(ResendService);
         const headers: Record<string, string | undefined> = {
           "svix-id": "id-1",
           "svix-timestamp": "1700000000",
@@ -119,7 +133,7 @@ describe("ResendService", () => {
 
     it("throws 500 when RESEND_WEBHOOK_SECRET is not configured", async () => {
       mocks.resendConfig.RESEND_WEBHOOK_SECRET = undefined;
-      const service = new ResendService();
+      const service = container.get(ResendService);
       const req = buildReq({});
 
       await expect(service.verifyWebhookPayload(req, headers)).rejects.toThrow(
@@ -128,7 +142,7 @@ describe("ResendService", () => {
     });
 
     it("throws 400 when signature verification returns a falsy result", async () => {
-      const service = new ResendService();
+      const service = container.get(ResendService);
       mocks.verify.mockReturnValueOnce(undefined);
       const req = buildReq({});
 
@@ -138,7 +152,7 @@ describe("ResendService", () => {
     });
 
     it("returns the verified payload and calls webhooks.verify with correct args", async () => {
-      const service = new ResendService();
+      const service = container.get(ResendService);
       const verifiedPayload = { type: "email.sent", data: { id: "e1" } };
       mocks.verify.mockReturnValueOnce(verifiedPayload);
       const req = buildReq({});

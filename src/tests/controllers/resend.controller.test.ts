@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ResendController } from "@/controllers";
+import { container } from "@/container";
 
 vi.mock("@/services", () => ({ ResendService: class {} }));
 
@@ -36,7 +37,7 @@ describe("ResendController", () => {
       getWebhookHeaders: vi.fn(),
       verifyWebhookPayload: vi.fn(),
     };
-    resendController = new ResendController({ resendService });
+    resendController = container.get(ResendController);
     logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
   });
 

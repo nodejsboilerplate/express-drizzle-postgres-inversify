@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GoogleOAuthService } from "@/services/auth";
+import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
   generateAuthUrl: vi.fn(),
@@ -62,7 +63,7 @@ describe("GoogleOAuthService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     deps = buildDeps();
-    googleOAuthService = new GoogleOAuthService(deps as any);
+    googleOAuthService = container.get(GoogleOAuthService);
   });
 
   // -------------------------------------------------------

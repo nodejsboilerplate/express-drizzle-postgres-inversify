@@ -1,6 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { MessageController } from "@/controllers";
+import { VerificationService } from "@/services";
+import { DITokens } from "@/ditokens";
 import { AUTH_USER } from "../helper";
+import { container } from "@/container";
 
 vi.mock("@/events", () => ({
   getSystemCustomErrorMsgByKey: (key: string) => key,
@@ -45,7 +48,6 @@ const buildDeps = () => ({
     sendSignupCode: vi.fn(),
     sendContactEmailVerificationCode: vi.fn(),
   },
-
   phoneService: {
     sendContactPhoneVerificationCode: vi.fn(),
   },
@@ -55,12 +57,30 @@ describe("MessageController", () => {
   let deps: ReturnType<typeof buildDeps>;
   let messageController: MessageController;
   let res: ReturnType<typeof buildRes>;
+  let snapshot: () => void;
 
   beforeEach(() => {
     vi.clearAllMocks();
     deps = buildDeps();
-    messageController = new MessageController(deps as any);
+
+    container.snapshot();
+
+    container
+      .rebind(VerificationService)
+      .toConstantValue(deps.verificationService as any);
+    container
+      .rebind(DITokens.EmailService)
+      .toConstantValue(deps.emailService as any);
+    container
+      .rebind(DITokens.PhoneService)
+      .toConstantValue(deps.phoneService as any);
+
+    messageController = container.get(MessageController);
     res = buildRes();
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   // -------------------------------------------------------
@@ -166,9 +186,6 @@ describe("MessageController", () => {
     });
   });
 
-  // -------------------------------------------------------
-  // Verify
-  // -------------------------------------------------------
   describe("verifyContactPhoneHandler", () => {
     it("verifies the phone and returns the updated phone id", async () => {
       deps.verificationService.verifyContactPhone.mockResolvedValueOnce("ph1");

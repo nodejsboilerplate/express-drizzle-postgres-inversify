@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { VerificationService } from "@/services";
+import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
   isZodError: vi.fn(),
@@ -56,7 +57,7 @@ describe("VerificationService", () => {
     vi.clearAllMocks();
     mocks.isZodError.mockReturnValue(false);
     deps = buildDeps();
-    verificationService = new VerificationService(deps as any);
+    verificationService = container.get(VerificationService);
   });
 
   // -------------------------------------------------------
