@@ -50,7 +50,10 @@ describe("UserController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     deps = buildDeps();
-    userController = new UserController(deps as any);
+    // UserController's constructor takes the UserService dependency directly
+    // (single @inject param), not an object wrapping it — pass deps.userService,
+    // not deps.
+    userController = new UserController(deps.userService as any);
     res = buildRes();
   });
 

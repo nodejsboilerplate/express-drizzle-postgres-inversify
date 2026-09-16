@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { UserService } from "@/services";
 import { UserInputValidators } from "@/validators/inputs";
 import { UserRepository } from "@/database/repositories";
+import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
   // repository
@@ -28,9 +29,6 @@ const mocks = vi.hoisted(() => ({
   deleteSingleContactPhone: vi.fn(),
   deleteSingleContactEmail: vi.fn(),
   deleteSingleAddress: vi.fn(),
-  // services
-  sendContactPhoneVerification: vi.fn(),
-  sendContactEmailVerificationCode: vi.fn(),
   // utils
   isZodError: vi.fn(),
   validationError: vi.fn(),
@@ -59,98 +57,54 @@ vi.mock("@/utils", () => ({
   validationError: mocks.validationError,
 }));
 
-vi.mock("@/validators/inputs", () => ({
-  UserInputValidators: class {
-    createUserWithProfileInput(p: unknown) {
-      return p;
-    }
-    createUserWithProfileByProviderInput(p: unknown) {
-      return p;
-    }
-    createUserAddressInput(p: unknown) {
-      return p;
-    }
-    createUserContactInput(p: unknown) {
-      return p;
-    }
-    createUserPhoneInput(p: unknown) {
-      return p;
-    }
-    createUserEmailInput(p: unknown) {
-      return p;
-    }
-    userIdWithContextIdInput(p: unknown) {
-      return p;
-    }
-    verifyCodeWithUserId(p: unknown) {
-      return p;
-    }
-    idInput(p: unknown) {
-      return p;
-    }
-    updateUserProfileInput(p: unknown) {
-      return p;
-    }
-    updateUserContactInput(p: unknown) {
-      return p;
-    }
-    updateUserPhoneInput(p: unknown) {
-      return p;
-    }
-    updateUserEmailInput(p: unknown) {
-      return p;
-    }
-    updateUserAddressInput(p: unknown) {
-      return p;
-    }
-  },
-}));
-
-vi.mock("@/database/repositories", () => ({
-  UserRepository: class {
-    GetUserIdByEmail = mocks.getUserIdByEmail;
-    GetUserDataForLoginByEmailOrUsernameOrId = mocks.getUserDataForLogin;
-    CreateNewUserAndProfile = mocks.createNewUserAndProfile;
-    CreateNewUserAndProfileByProvider = mocks.createNewUserAndProfileByProvider;
-    CreateNewAddress = mocks.createNewAddress;
-    CreateNewContact = mocks.createNewContact;
-    CreateNewPhone = mocks.createNewPhone;
-    CreateNewEmail = mocks.createNewEmail;
-    SetPhoneVerifyCode = mocks.setPhoneVerifyCode;
-    SetEmailVerifyCode = mocks.setEmailVerifyCode;
-    GetContactPhoneVerifyDetails = mocks.getContactPhoneVerifyDetails;
-    GetContactEmailVerifyDetails = mocks.getContactEmailVerifyDetails;
-    GetAuthUserProfileById = mocks.getAuthUserProfileById;
-    UpdateUserProfile = mocks.updateUserProfile;
-    UpdateContact = mocks.updateContact;
-    UpdateContactPhone = mocks.updateContactPhone;
-    UpdateContactEmail = mocks.updateContactEmail;
-    UpdateAddress = mocks.updateAddress;
-    DeleteUserById = mocks.deleteUserById;
-    DeleteSingleContact = mocks.deleteSingleContact;
-    DeleteSingleContactPhone = mocks.deleteSingleContactPhone;
-    DeleteSingleContactEmail = mocks.deleteSingleContactEmail;
-    DeleteSingleAddress = mocks.deleteSingleAddress;
-  },
-}));
-
-vi.mock("@/services/phone.message.service", () => ({
-  PhoneMessagingService: class {
-    sendContactPhoneVerification = mocks.sendContactPhoneVerification;
-  },
-}));
-
-vi.mock("@/services/email.service", () => ({
-  EmailService: class {
-    sendContactEmailVerificationCode = mocks.sendContactEmailVerificationCode;
-  },
-}));
-
 const ApiErrorLike = (status: number, message: string) => {
   const e: any = new Error(message);
   e.status = status;
   return e;
 };
+
+const buildRepoStub = () => ({
+  GetUserIdByEmail: mocks.getUserIdByEmail,
+  GetUserDataForLoginByEmailOrUsernameOrId: mocks.getUserDataForLogin,
+  CreateNewUserAndProfile: mocks.createNewUserAndProfile,
+  CreateNewUserAndProfileByProvider: mocks.createNewUserAndProfileByProvider,
+  CreateNewAddress: mocks.createNewAddress,
+  CreateNewContact: mocks.createNewContact,
+  CreateNewPhone: mocks.createNewPhone,
+  CreateNewEmail: mocks.createNewEmail,
+  SetPhoneVerifyCode: mocks.setPhoneVerifyCode,
+  SetEmailVerifyCode: mocks.setEmailVerifyCode,
+  GetContactPhoneVerifyDetails: mocks.getContactPhoneVerifyDetails,
+  GetContactEmailVerifyDetails: mocks.getContactEmailVerifyDetails,
+  GetAuthUserProfileById: mocks.getAuthUserProfileById,
+  UpdateUserProfile: mocks.updateUserProfile,
+  UpdateContact: mocks.updateContact,
+  UpdateContactPhone: mocks.updateContactPhone,
+  UpdateContactEmail: mocks.updateContactEmail,
+  UpdateAddress: mocks.updateAddress,
+  DeleteUserById: mocks.deleteUserById,
+  DeleteSingleContact: mocks.deleteSingleContact,
+  DeleteSingleContactPhone: mocks.deleteSingleContactPhone,
+  DeleteSingleContactEmail: mocks.deleteSingleContactEmail,
+  DeleteSingleAddress: mocks.deleteSingleAddress,
+});
+
+const buildValidatorsStub = () => ({
+  createUserWithProfileInput: (p: unknown) => p,
+  createUserWithProfileByProviderInput: (p: unknown) => p,
+  createUserAddressInput: (p: unknown) => p,
+  createUserContactInput: (p: unknown) => p,
+  createUserPhoneInput: (p: unknown) => p,
+  createUserEmailInput: (p: unknown) => p,
+  userIdWithContextIdInput: (p: unknown) => p,
+  verifyCodeWithUserId: (p: unknown) => p,
+  idInput: (p: unknown) => p,
+  updateUserProfileInput: (p: unknown) => p,
+  updateUserContactInput: (p: unknown) => p,
+  updateUserPhoneInput: (p: unknown) => p,
+  updateUserEmailInput: (p: unknown) => p,
+  updateUserAddressInput: (p: unknown) => p,
+});
 
 describe("UserService", () => {
   let userService: UserService;
@@ -159,12 +113,18 @@ describe("UserService", () => {
     vi.clearAllMocks();
     mocks.isZodError.mockReturnValue(false);
     mocks.generateVerificationCode.mockReturnValue("123456");
-    const userInputValidators = new UserInputValidators();
-    const userRepository = new UserRepository();
-    userService = new UserService({
-      userInputValidators,
-      userRepository,
-    });
+
+    container.snapshot();
+    container.rebind(UserRepository).toConstantValue(buildRepoStub() as any);
+    container
+      .rebind(UserInputValidators)
+      .toConstantValue(buildValidatorsStub() as any);
+
+    userService = container.get(UserService);
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   // -------------------------------------------------------

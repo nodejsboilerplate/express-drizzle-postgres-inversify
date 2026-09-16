@@ -1,5 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { VerificationService } from "@/services";
+import { UserInputValidators } from "@/validators/inputs";
+import { UserRepository } from "@/database/repositories";
+import { UserService } from "@/services";
 import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
@@ -57,7 +60,19 @@ describe("VerificationService", () => {
     vi.clearAllMocks();
     mocks.isZodError.mockReturnValue(false);
     deps = buildDeps();
+
+    container.snapshot();
+    container
+      .rebind(UserInputValidators)
+      .toConstantValue(deps.userInputValidators as any);
+    container.rebind(UserRepository).toConstantValue(deps.userRepository as any);
+    container.rebind(UserService).toConstantValue(deps.userService as any);
+
     verificationService = container.get(VerificationService);
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   // -------------------------------------------------------

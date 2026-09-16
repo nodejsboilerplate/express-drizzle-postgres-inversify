@@ -1,5 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { EmailService } from "@/services";
+import { UserInputValidators } from "@/validators/inputs";
+import { UserRepository } from "@/database/repositories";
+import { DITokens } from "@/ditokens";
 import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
@@ -13,7 +16,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/services/resend.service", () => ({
   ResendService: class {
-    static resend = { emails: { send: mocks.send } };
+    resend = { emails: { send: mocks.send } };   // ← instance field now
     static TEAM_NAME = "My Team";
     static APP_LOGO_URL = "https://cdn.test/logo.png";
     static EMAIL_DOMAIN = "fluctux.com";
@@ -79,7 +82,21 @@ describe("EmailService", () => {
     mocks.generateVerificationCode.mockReturnValue("123456");
     mocks.getVerifyExpiry.mockReturnValue(new Date(Date.now() + 5 * 60_000));
     deps = buildDeps();
-    emailService = container.get(EmailService);
+
+    container.snapshot();
+    container
+      .rebind(UserInputValidators)
+      .toConstantValue(deps.userInputValidators as any);
+    container.rebind(UserRepository).toConstantValue(deps.userRepository as any);
+
+    // EmailService is bound under the DITokens.EmailService interface token
+    // (see MessageController's `@inject(DITokens.EmailService)`), not under
+    // its own class — resolve it that way here too.
+    emailService = container.get(DITokens.EmailService) as EmailService;
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   // -------------------------------------------------------

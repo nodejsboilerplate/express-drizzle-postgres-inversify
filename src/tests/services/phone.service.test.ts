@@ -1,5 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { PhoneMessagingService } from "@/services";
+import { UserInputValidators } from "@/validators/inputs";
+import { UserRepository } from "@/database/repositories";
+import { DITokens } from "@/ditokens";
 import { container } from "@/container";
 
 const mocks = vi.hoisted(() => ({
@@ -65,7 +68,23 @@ describe("PhoneMessagingService", () => {
     mocks.generateVerificationCode.mockReturnValue("123456");
     mocks.getVerifyExpiry.mockReturnValue(new Date(Date.now() + 5 * 60_000));
     deps = buildDeps();
-    phoneMessagingService = container.get(PhoneMessagingService);
+
+    container.snapshot();
+    container
+      .rebind(UserInputValidators)
+      .toConstantValue(deps.userInputValidators as any);
+    container.rebind(UserRepository).toConstantValue(deps.userRepository as any);
+
+    // PhoneMessagingService is bound under the DITokens.PhoneService
+    // interface token (see MessageController's `@inject(DITokens.PhoneService)`),
+    // not under its own class — resolve it that way here too.
+    phoneMessagingService = container.get(
+      DITokens.PhoneService
+    ) as PhoneMessagingService;
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   describe("sendContactPhoneVerificationCode", () => {
