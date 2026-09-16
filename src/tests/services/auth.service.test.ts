@@ -54,7 +54,9 @@ describe("AuthService", () => {
     // EmailService bindings, and the mocks above are never actually wired in.
     container.snapshot();
     container.rebind(AuthRedis).toConstantValue(deps.authRedis as any);
-    container.rebind(UserRepository).toConstantValue(deps.userRepository as any);
+    container
+      .rebind(UserRepository)
+      .toConstantValue(deps.userRepository as any);
     container.rebind(TokenService).toConstantValue(deps.tokenService as any);
     container
       .rebind(UserInputValidators)

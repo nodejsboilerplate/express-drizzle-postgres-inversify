@@ -70,7 +70,9 @@ describe("GoogleOAuthService", () => {
 
     container.snapshot();
     container.rebind(AuthRedis).toConstantValue(deps.authRedis as any);
-    container.rebind(DITokens.EmailService).toConstantValue(deps.emailService as any);
+    container
+      .rebind(DITokens.EmailService)
+      .toConstantValue(deps.emailService as any);
     container.rebind(UserService).toConstantValue(deps.userService as any);
     container.rebind(TokenService).toConstantValue(deps.tokenService as any);
 

@@ -73,7 +73,9 @@ describe("PhoneMessagingService", () => {
     container
       .rebind(UserInputValidators)
       .toConstantValue(deps.userInputValidators as any);
-    container.rebind(UserRepository).toConstantValue(deps.userRepository as any);
+    container
+      .rebind(UserRepository)
+      .toConstantValue(deps.userRepository as any);
 
     // PhoneMessagingService is bound under the DITokens.PhoneService
     // interface token (see MessageController's `@inject(DITokens.PhoneService)`),

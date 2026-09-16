@@ -65,7 +65,9 @@ describe("VerificationService", () => {
     container
       .rebind(UserInputValidators)
       .toConstantValue(deps.userInputValidators as any);
-    container.rebind(UserRepository).toConstantValue(deps.userRepository as any);
+    container
+      .rebind(UserRepository)
+      .toConstantValue(deps.userRepository as any);
     container.rebind(UserService).toConstantValue(deps.userService as any);
 
     verificationService = container.get(VerificationService);

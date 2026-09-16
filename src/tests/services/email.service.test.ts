@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/services/resend.service", () => ({
   ResendService: class {
-    resend = { emails: { send: mocks.send } };   // ← instance field now
+    resend = { emails: { send: mocks.send } }; // ← instance field now
     static TEAM_NAME = "My Team";
     static APP_LOGO_URL = "https://cdn.test/logo.png";
     static EMAIL_DOMAIN = "fluctux.com";
@@ -87,7 +87,9 @@ describe("EmailService", () => {
     container
       .rebind(UserInputValidators)
       .toConstantValue(deps.userInputValidators as any);
-    container.rebind(UserRepository).toConstantValue(deps.userRepository as any);
+    container
+      .rebind(UserRepository)
+      .toConstantValue(deps.userRepository as any);
 
     // EmailService is bound under the DITokens.EmailService interface token
     // (see MessageController's `@inject(DITokens.EmailService)`), not under
