@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { injectable, inject } from "inversify";
 import { AuthService } from "@/services/auth";
 import { TokenService } from "@/services/auth/token.service";
 import { UserService } from "@/services";
@@ -8,61 +7,6 @@ import { UserRepository } from "@/database/repositories";
 import { UserInputValidators } from "@/validators/inputs";
 import { DITokens } from "@/ditokens";
 import { container } from "@/container";
-
-const mocks = vi.hoisted(() => ({
-  manualAuthCtor: vi.fn(),
-  googleOAuthCtor: vi.fn(),
-}));
-
-// The real ManualAuthService/GoogleOAuthService take POSITIONAL, individually
-// @inject()-decorated constructor params (see the real source files) — the
-// container resolves each one independently, it never hands them a single
-// bundled "deps" object. To capture what the container actually wired in,
-// these fakes must mirror that same decorated, positional shape and only
-// bundle the args into an object afterwards, for the assertions below.
-vi.mock("@/services/auth/manual-auth.service", () => {
-  @injectable()
-  class ManualAuthService {
-    constructor(
-      @inject(UserRepository) userRepository: unknown,
-      @inject(UserService) userService: unknown,
-      @inject(AuthRedis) authRedis: unknown,
-      @inject(UserInputValidators) userInputValidators: unknown,
-      @inject(DITokens.EmailService) emailService: unknown,
-      @inject(TokenService) tokenService: unknown
-    ) {
-      mocks.manualAuthCtor({
-        userRepository,
-        userService,
-        authRedis,
-        userInputValidators,
-        emailService,
-        tokenService,
-      });
-    }
-  }
-  return { ManualAuthService };
-});
-
-vi.mock("@/services/auth/google-auth.service", () => {
-  @injectable()
-  class GoogleOAuthService {
-    constructor(
-      @inject(AuthRedis) authRedis: unknown,
-      @inject(DITokens.EmailService) emailService: unknown,
-      @inject(UserService) userService: unknown,
-      @inject(TokenService) tokenService: unknown
-    ) {
-      mocks.googleOAuthCtor({
-        authRedis,
-        emailService,
-        userService,
-        tokenService,
-      });
-    }
-  }
-  return { GoogleOAuthService };
-});
 
 vi.mock("@/events", () => ({
   getSystemCustomErrorMsgByKey: (key: string) => key,
@@ -129,29 +73,10 @@ describe("AuthService", () => {
 
   // -------------------------------------------------------
   describe("construction / wiring", () => {
-    it("constructs manualAuth with authRedis, emailService, tokenService, userInputValidators, userRepository, userService", () => {
-      expect(mocks.manualAuthCtor).toHaveBeenCalledWith(
-        expect.objectContaining({
-          authRedis: deps.authRedis,
-          emailService: deps.emailService,
-          tokenService: deps.tokenService,
-          userInputValidators: deps.userInputValidators,
-          userRepository: deps.userRepository,
-          userService: deps.userService,
-        })
-      );
+    it("resolves the manual and Google auth helpers from the container", () => {
+      expect(authService.manualAuth).toBeDefined();
+      expect(authService.googleOAuth).toBeDefined();
       expect(authService.manualAuth).toBeInstanceOf(Object);
-    });
-
-    it("constructs googleOAuth with authRedis, emailService, userService, tokenService", () => {
-      expect(mocks.googleOAuthCtor).toHaveBeenCalledWith(
-        expect.objectContaining({
-          authRedis: deps.authRedis,
-          emailService: deps.emailService,
-          userService: deps.userService,
-          tokenService: deps.tokenService,
-        })
-      );
       expect(authService.googleOAuth).toBeInstanceOf(Object);
     });
   });

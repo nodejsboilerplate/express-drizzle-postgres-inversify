@@ -1,18 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AuthController } from "@/controllers";
+import { container } from "@/container";
+import { AuthService } from "@/services/auth";
 
-vi.mock("@/services", () => ({
-  CookieService: {
-    ACCESS_TOKEN: {
-      name: "accessToken",
-      cookie: { httpOnly: false, sameSite: "lax" },
+vi.mock("@/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services")>();
+
+  return {
+    ...actual,
+    CookieService: {
+      ACCESS_TOKEN: {
+        name: "accessToken",
+        cookie: { httpOnly: false, sameSite: "lax" },
+      },
+      REFRESH_TOKEN: {
+        name: "refreshToken",
+        cookie: { httpOnly: false, sameSite: "lax" },
+      },
     },
-    REFRESH_TOKEN: {
-      name: "refreshToken",
-      cookie: { httpOnly: false, sameSite: "lax" },
-    },
-  },
-}));
+    VerificationService: class VerificationService {},
+    ResendService: class ResendService {},
+  };
+});
 
 vi.mock("@/events", () => ({
   getSystemCustomErrorMsgByKey: (key: string) => key,
@@ -78,8 +87,15 @@ describe("AuthController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     deps = buildDeps();
-    authController = new AuthController(deps as any);
+
+    container.snapshot();
+    container.rebind(AuthService).toConstantValue(deps.authService as any);
+    authController = container.get(AuthController);
     res = buildRes();
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   // -------------------------------------------------------

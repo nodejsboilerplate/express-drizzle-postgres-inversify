@@ -1,8 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ResendController } from "@/controllers";
 import { container } from "@/container";
+import { ResendService } from "@/services";
 
-vi.mock("@/services", () => ({ ResendService: class {} }));
+vi.mock("@/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services")>();
+
+  return {
+    ...actual,
+    ResendService: class ResendService {},
+  };
+});
 
 vi.mock("@/libs", () => ({
   ApiResponse: class {
@@ -37,11 +45,15 @@ describe("ResendController", () => {
       getWebhookHeaders: vi.fn(),
       verifyWebhookPayload: vi.fn(),
     };
+
+    container.snapshot();
+    container.rebind(ResendService).toConstantValue(resendService as any);
     resendController = container.get(ResendController);
     logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    container.restore();
     logSpy.mockRestore();
   });
 

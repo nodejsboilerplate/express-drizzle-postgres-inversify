@@ -1,6 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GoogleOAuthService } from "@/services/auth";
 import { container } from "@/container";
+import { AuthRedis } from "@/redis";
+import { DITokens } from "@/ditokens";
+import { TokenService } from "@/services/auth";
+import { UserService } from "@/services";
 
 const mocks = vi.hoisted(() => ({
   generateAuthUrl: vi.fn(),
@@ -63,7 +67,18 @@ describe("GoogleOAuthService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     deps = buildDeps();
+
+    container.snapshot();
+    container.rebind(AuthRedis).toConstantValue(deps.authRedis as any);
+    container.rebind(DITokens.EmailService).toConstantValue(deps.emailService as any);
+    container.rebind(UserService).toConstantValue(deps.userService as any);
+    container.rebind(TokenService).toConstantValue(deps.tokenService as any);
+
     googleOAuthService = container.get(GoogleOAuthService);
+  });
+
+  afterEach(() => {
+    container.restore();
   });
 
   // -------------------------------------------------------
