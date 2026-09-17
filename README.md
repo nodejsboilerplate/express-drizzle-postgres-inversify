@@ -12,6 +12,7 @@ Nebula ships with authentication, observability, background infrastructure, and 
 
 - [Stack Overview](#stack-overview)
 - [Dependency Injection Container](#dependency-injection-container)
+- [Email Templates](#email-templates)
 - [Getting Started](#getting-started)
 - [Environment Setup](#environment-setup)
 - [Database Commands](#database-commands)
@@ -35,7 +36,7 @@ Nebula ships with authentication, observability, background infrastructure, and 
 | Cache / Queue / Sessions | Redis                                                |
 | Validation               | Zod                                                  |
 | Auth                     | JWT + Cookies + Google OAuth                         |
-| Email Delivery           | Resend                                               |
+| Email Delivery           | Resend + `@repo/emails` (react-email)                |
 | SMS                      | Twilio                                               |
 | Logging                  | Pino + request logger middleware, Winston (for Loki) |
 | Rate Limiting            | express-rate-limit + Redis-backed store              |
@@ -49,6 +50,16 @@ Nebula ships with authentication, observability, background infrastructure, and 
 ## Dependency Injection Container
 
 Dependencies are wired via **InversifyJS**, configured in `container.ts`.
+
+---
+
+## Email Templates
+
+`@repo/emails` ships with **4 pre-built react-email templates, designed off real Dribbble references** - not the usual bare-bones "Welcome to X" placeholder. Ready to send from day one:
+
+- signup confirmation
+- Password reset / OTP
+- Order confirmation
 
 ---
 
