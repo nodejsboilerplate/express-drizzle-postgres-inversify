@@ -26,7 +26,7 @@
     "db:seed": "tsx ./src/database/seeds/index.ts",
     "test": "vitest",
     "check:types": "node ./node_modules/typescript-7/bin/tsc --noEmit",
-    "clean": "rm -rf node_modules && echo 'Cleanup complete!'",
+    "clean": "rm -rf node_modules dist docs && echo 'Cleanup complete!'",
     "prepare": "husky",
     "commit": "git-cz"
   },
