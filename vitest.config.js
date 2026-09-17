@@ -5,12 +5,12 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
+    setupFiles: ["./src/tests/setup.ts"],
     env: {
       NODE_ENV: "test",
     },
     include: ["src/tests/**/*.test.ts"],
     environment: "node",
     globals: true,
-    globalSetup: "./src/tests/setup.ts",
   },
 });

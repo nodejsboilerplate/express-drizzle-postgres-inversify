@@ -36,20 +36,6 @@ const mocks = vi.hoisted(() => ({
   getVerifyExpiry: vi.fn(),
 }));
 
-vi.mock("@/events", () => ({
-  getSystemCustomErrorMsgByKey: (key: string) => key,
-}));
-
-vi.mock("@/libs", () => ({
-  ApiError: class ApiError extends Error {
-    status: number;
-    constructor(status: number, message: string) {
-      super(message);
-      this.status = status;
-    }
-  },
-}));
-
 vi.mock("@/utils", () => ({
   generateVerificationCode: mocks.generateVerificationCode,
   getVerifyExpiry: mocks.getVerifyExpiry,

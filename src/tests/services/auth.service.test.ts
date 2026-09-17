@@ -8,20 +8,6 @@ import { UserInputValidators } from "@/validators/inputs";
 import { DITokens } from "@/ditokens";
 import { container } from "@/container";
 
-vi.mock("@/events", () => ({
-  getSystemCustomErrorMsgByKey: (key: string) => key,
-}));
-
-vi.mock("@/libs", () => ({
-  ApiError: class ApiError extends Error {
-    status: number;
-    constructor(status: number, message: string) {
-      super(message);
-      this.status = status;
-    }
-  },
-}));
-
 const buildDeps = () => ({
   authRedis: {
     getCachedLoginData: vi.fn(),

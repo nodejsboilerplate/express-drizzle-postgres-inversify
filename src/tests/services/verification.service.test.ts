@@ -15,20 +15,6 @@ vi.mock("@/utils", () => ({
   validationError: mocks.validationError,
 }));
 
-vi.mock("@/events", () => ({
-  getSystemCustomErrorMsgByKey: (key: string) => key,
-}));
-
-vi.mock("@/libs", () => ({
-  ApiError: class ApiError extends Error {
-    status: number;
-    constructor(status: number, message: string) {
-      super(message);
-      this.status = status;
-    }
-  },
-}));
-
 const ApiErrorLike = (status: number, message: string) => {
   const e: any = new Error(message);
   e.status = status;
