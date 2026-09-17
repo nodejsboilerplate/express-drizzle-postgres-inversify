@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "dev": "tsx --watch ./src/index.ts",
-    "build": "tsdown",
+    "build": "pnpm --filter emails build && tsdown",
     "format": "prettier --write \"**/*.{ts,md,json,js,yaml}\"",
     "gen:docs": "NODE_OPTIONS='--max-old-space-size=4096' typedoc",
     "check:lint": "eslint . --cache --cache-location node_modules/.cache/eslint/ --max-warnings 1000",
